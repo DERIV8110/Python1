@@ -1,0 +1,5 @@
+a=float(input('enter a: '))
+m=float(input('enter m: '))
+n=float(input('enter n: '))
+x=(a**n)*(a**m)
+print(x)
