@@ -1,5 +1,16 @@
-n=int(input("enter the term: "))
-j=n-1
-#we have to keep n<=20
-fibo=[0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,600,977,1577,2554,4131]
-print(fibo[j])
+n = int(input("Enter n: "))
+
+if (n > 20):
+    print("n should be less than or equal to 20")
+else :
+    a = 0
+    b = 1
+    c = a + b
+    for i in range(3, n + 1):
+        a = b
+        b = c
+        c = a + b
+
+    print(n, "term of Fibonacci series =", c)
+
+    #i didn't code this
