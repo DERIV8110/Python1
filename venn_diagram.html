@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venn Diagram: u - (v - u) == u</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e8e8f0;
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 30px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .steps-container {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .step-card {
+    background: #12121a;
+    border: 1px solid #1e1e2e;
+    border-radius: 16px;
+    padding: 20px;
+    flex: 1;
+    min-width: 220px;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.3s, transform 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .step-card:nth-child(1)::before { background: #4f8ef7; }
+  .step-card:nth-child(2)::before { background: #f74f8e; }
+  .step-card:nth-child(3)::before { background: #4ff7a0; }
+
+  .step-card:hover {
+    border-color: #333;
+    transform: translateY(-3px);
+  }
+
+  .step-number {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    color: #ddd;
+  }
+
+  .step-card:nth-child(1) .step-title { color: #4f8ef7; }
+  .step-card:nth-child(2) .step-title { color: #f74f8e; }
+  .step-card:nth-child(3) .step-title { color: #4ff7a0; }
+
+  svg.venn {
+    width: 200px;
+    height: 130px;
+    overflow: visible;
+  }
+
+  .step-desc {
+    font-size: 0.72rem;
+    color: #888;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .formula-box {
+    background: #0d0d14;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    color: #ccc;
+    letter-spacing: 0.05em;
+  }
+
+  .conclusion {
+    margin-top: 28px;
+    background: linear-gradient(135deg, #0f1a2e, #0f2a1a);
+    border: 1px solid #1a3a2a;
+    border-radius: 16px;
+    padding: 22px 32px;
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .conclusion h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4ff7a0;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .conclusion p {
+    font-size: 0.75rem;
+    color: #888;
+    line-height: 1.7;
+  }
+
+  .conclusion .big-formula {
+    font-size: 1.1rem;
+    color: #fff;
+    margin: 12px 0;
+    letter-spacing: 0.05em;
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.68rem;
+    color: #777;
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<h1>u − (v − u) == u</h1>
+<p class="subtitle">Set Theory · Venn Diagram Walkthrough</p>
+
+<div class="steps-container">
+
+  <!-- Step 1 -->
+  <div class="step-card">
+    <span class="step-number">Step 01</span>
+    <span class="step-title">Start: u and v</span>
+    <svg class="venn" viewBox="0 0 200 130">
+      <!-- U circle -->
+      <circle cx="80" cy="65" r="50" fill="#4f8ef720" stroke="#4f8ef7" stroke-width="1.5"/>
+      <!-- V circle -->
+      <circle cx="130" cy="65" r="50" fill="#f7c44f20" stroke="#f7c44f" stroke-width="1.5"/>
+      <!-- Labels -->
+      <text x="52" y="45" fill="#4f8ef7" font-size="16" font-family="Syne" font-weight="800">u</text>
+      <text x="148" y="45" fill="#f7c44f" font-size="16" font-family="Syne" font-weight="800">v</text>
+      <!-- Overlap hint -->
+      <text x="100" y="72" fill="#aaa" font-size="9" font-family="Space Mono" text-anchor="middle">u ∩ v</text>
+    </svg>
+    <div class="formula-box">u = {1,2,3} &nbsp;|&nbsp; v = {2,3,4}</div>
+    <p class="step-desc">Two sets u and v may overlap partially, fully, or not at all.</p>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-card">
+    <span class="step-number">Step 02</span>
+    <span class="step-title">v − u (only-v region)</span>
+    <svg class="venn" viewBox="0 0 200 130">
+      <!-- U circle (dim) -->
+      <circle cx="80" cy="65" r="50" fill="#4f8ef708" stroke="#4f8ef740" stroke-width="1.5"/>
+      <!-- V circle -->
+      <circle cx="130" cy="65" r="50" fill="#f7c44f08" stroke="#f7c44f40" stroke-width="1.5"/>
+
+      <!-- Highlight only-v part using clip -->
+      <defs>
+        <clipPath id="onlyV">
+          <rect x="105" y="0" width="100" height="200"/>
+        </clipPath>
+        <!-- Exclude u from v -->
+        <mask id="vMinusU">
+          <rect width="200" height="200" fill="white"/>
+          <circle cx="80" cy="65" r="50" fill="black"/>
+        </mask>
+      </defs>
+      <circle cx="130" cy="65" r="50" fill="#f74f8e60" stroke="none" mask="url(#vMinusU)"/>
+      <circle cx="130" cy="65" r="50" fill="none" stroke="#f74f8e" stroke-width="1.5"/>
+
+      <text x="52" y="45" fill="#4f8ef740" font-size="16" font-family="Syne" font-weight="800">u</text>
+      <text x="148" y="45" fill="#f74f8e" font-size="16" font-family="Syne" font-weight="800">v</text>
+      <text x="155" y="72" fill="#f74f8e" font-size="8" font-family="Space Mono" text-anchor="middle">v−u</text>
+      <text x="155" y="83" fill="#f74f8e" font-size="8" font-family="Space Mono" text-anchor="middle">= {4}</text>
+    </svg>
+    <div class="formula-box">v − u = {4}</div>
+    <p class="step-desc">v − u contains <em>only</em> elements that are in v but <strong>NOT</strong> in u. This region never touches u.</p>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-card">
+    <span class="step-number">Step 03</span>
+    <span class="step-title">u − (v−u) = u ✓</span>
+    <svg class="venn" viewBox="0 0 200 130">
+      <!-- V circle dim -->
+      <circle cx="130" cy="65" r="50" fill="#f7c44f08" stroke="#f7c44f30" stroke-width="1.5"/>
+      <!-- U fully highlighted -->
+      <circle cx="80" cy="65" r="50" fill="#4ff7a050" stroke="#4ff7a0" stroke-width="2"/>
+
+      <defs>
+        <mask id="vMinusU2">
+          <rect width="200" height="200" fill="white"/>
+          <circle cx="80" cy="65" r="50" fill="black"/>
+        </mask>
+      </defs>
+      <!-- v-u shown as strikethrough / dim -->
+      <circle cx="130" cy="65" r="50" fill="#f74f8e15" stroke="none" mask="url(#vMinusU2)"/>
+
+      <text x="52" y="45" fill="#4ff7a0" font-size="16" font-family="Syne" font-weight="800">u</text>
+      <text x="148" y="45" fill="#f7c44f40" font-size="16" font-family="Syne" font-weight="800">v</text>
+
+      <!-- checkmark -->
+      <text x="72" y="72" fill="#4ff7a0" font-size="20" text-anchor="middle">✓</text>
+      <text x="80" y="88" fill="#4ff7a0" font-size="8" font-family="Space Mono" text-anchor="middle">u intact!</text>
+
+      <!-- arrow showing v-u can't enter u -->
+      <line x1="152" y1="78" x2="118" y2="78" stroke="#f74f8e" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+      <defs>
+        <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#f74f8e"/>
+        </marker>
+      </defs>
+      <text x="161" y="74" fill="#f74f8e" font-size="7" font-family="Space Mono">can't</text>
+      <text x="161" y="83" fill="#f74f8e" font-size="7" font-family="Space Mono">enter u</text>
+    </svg>
+    <div class="formula-box">u − (v−u) = {1,2,3} = u</div>
+    <p class="step-desc">Since v−u is <strong>always outside u</strong>, subtracting it from u removes <em>nothing</em>. u stays unchanged.</p>
+  </div>
+
+</div>
+
+<!-- Conclusion -->
+<div class="conclusion">
+  <h2>⟶ Why this is always true</h2>
+  <div class="big-formula">u − (v − u) ≡ u</div>
+  <p>
+    The set <strong style="color:#f74f8e">v − u</strong> is defined as elements in v that are <em>not</em> in u.<br>
+    This means <strong style="color:#f74f8e">v − u</strong> and <strong style="color:#4f8ef7">u</strong> are always <strong>disjoint</strong> — they share no elements.<br><br>
+    Subtracting a disjoint set from u can never remove anything from u.<br>
+    Therefore the equation holds for <strong style="color:#4ff7a0">any possible u and v</strong>.
+  </p>
+  <div style="margin-top:14px; padding-top:14px; border-top: 1px solid #1a3a2a;">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div> u (always preserved)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f74f8e"></div> v − u (always outside u)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ff7a0"></div> result = u ✓</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
