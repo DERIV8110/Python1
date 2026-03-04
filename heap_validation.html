@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Min Heap Validation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Unbounded:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #060810;
+    --card: #0c0e1a;
+    --border: #1a1d30;
+    --accent: #00d4ff;
+    --green: #00ff9d;
+    --red: #ff4466;
+    --level1: #7c6fff;
+    --level2: #ff6b35;
+    --text: #c8cee8;
+    --dim: #4a5080;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 48px;
+    background-image: radial-gradient(ellipse at 20% 10%, #00ff9d06 0%, transparent 50%),
+                      radial-gradient(ellipse at 80% 90%, #ff446606 0%, transparent 50%);
+  }
+
+  h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.03em;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .subtitle { font-size: 0.65rem; color: var(--dim); letter-spacing: 0.14em; text-transform: uppercase; text-align: center; margin-bottom: 28px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .option-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-card.valid { border-color: #00ff9d30; }
+  .option-card.invalid { border-color: #ff446650; background: #120810; }
+
+  .option-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .option-card.valid::before { background: var(--green); }
+  .option-card.invalid::before { background: var(--red); }
+
+  .option-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .option-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .badge {
+    font-size: 0.62rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .badge.valid { background: #00ff9d20; color: var(--green); border: 1px solid #00ff9d40; }
+  .badge.invalid { background: #ff446620; color: var(--red); border: 1px solid #ff446640; }
+
+  .array-row {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ac {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .av {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1.5px solid var(--border);
+    background: #10142a;
+    color: #fff;
+  }
+
+  .av.root { border-color: var(--accent); color: var(--accent); }
+  .av.l1 { border-color: var(--level1); color: #b8b0ff; }
+  .av.l2 { border-color: var(--level2); color: #ffb89a; }
+  .av.l3 { border-color: #2a3060; color: var(--text); }
+  .av.violation { border-color: var(--red) !important; color: var(--red) !important; background: #1a0810; animation: pulse 1.5s infinite; }
+  .av.violation-parent { border-color: #ff8800 !important; color: #ff8800 !important; background: #1a1008; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 #ff446640; }
+    50% { box-shadow: 0 0 0 4px #ff446620; }
+  }
+
+  .ai { font-size: 0.5rem; color: var(--dim); }
+
+  svg.tree { width: 100%; height: auto; display: block; }
+
+  .violation-note {
+    background: #1a0810;
+    border: 1px solid #ff446640;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.68rem;
+    color: var(--red);
+    text-align: center;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>Min Heap Validation</h1>
+<p class="subtitle">Checking all 4 options · parent ≤ children rule</p>
+
+<div class="grid">
+
+  <!-- OPTION 1: VALID -->
+  <div class="option-card valid">
+    <div class="option-header">
+      <span class="option-title">Option 1</span>
+      <span class="badge valid">✓ VALID</span>
+    </div>
+    <div class="array-row">
+      <div class="ac"><div class="av root">19</div><div class="ai">0</div></div>
+      <div class="ac"><div class="av l1">28</div><div class="ai">1</div></div>
+      <div class="ac"><div class="av l1">72</div><div class="ai">2</div></div>
+      <div class="ac"><div class="av l2">31</div><div class="ai">3</div></div>
+      <div class="ac"><div class="av l2">29</div><div class="ai">4</div></div>
+      <div class="ac"><div class="av l2">83</div><div class="ai">5</div></div>
+      <div class="ac"><div class="av l2">97</div><div class="ai">6</div></div>
+      <div class="ac"><div class="av l3">55</div><div class="ai">7</div></div>
+      <div class="ac"><div class="av l3">45</div><div class="ai">8</div></div>
+      <div class="ac"><div class="av l3">31</div><div class="ai">9</div></div>
+    </div>
+    <svg class="tree" viewBox="0 0 340 220">
+      <line x1="170" y1="28" x2="95"  y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="170" y1="28" x2="245" y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="55"  y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="135" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="205" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="285" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="30"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="80"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="135" y1="152" x2="110" y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+
+      <circle cx="170" cy="18" r="18" fill="#00d4ff18" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="170" y="23" fill="#00d4ff" font-size="11" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">19</text>
+
+      <circle cx="95"  cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="95"  y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">28</text>
+      <circle cx="245" cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="245" y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">72</text>
+
+      <circle cx="55"  cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="55"  y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <circle cx="135" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="135" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">29</text>
+      <circle cx="205" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="205" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">83</text>
+      <circle cx="285" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="285" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">97</text>
+
+      <circle cx="30"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="30"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">55</text>
+      <circle cx="80"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="80"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">45</text>
+      <circle cx="110" cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="110" y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+    </svg>
+  </div>
+
+  <!-- OPTION 2: VALID -->
+  <div class="option-card valid">
+    <div class="option-header">
+      <span class="option-title">Option 2</span>
+      <span class="badge valid">✓ VALID</span>
+    </div>
+    <div class="array-row">
+      <div class="ac"><div class="av root">19</div><div class="ai">0</div></div>
+      <div class="ac"><div class="av l1">31</div><div class="ai">1</div></div>
+      <div class="ac"><div class="av l1">28</div><div class="ai">2</div></div>
+      <div class="ac"><div class="av l2">45</div><div class="ai">3</div></div>
+      <div class="ac"><div class="av l2">31</div><div class="ai">4</div></div>
+      <div class="ac"><div class="av l2">97</div><div class="ai">5</div></div>
+      <div class="ac"><div class="av l2">29</div><div class="ai">6</div></div>
+      <div class="ac"><div class="av l3">72</div><div class="ai">7</div></div>
+      <div class="ac"><div class="av l3">55</div><div class="ai">8</div></div>
+      <div class="ac"><div class="av l3">83</div><div class="ai">9</div></div>
+    </div>
+    <svg class="tree" viewBox="0 0 340 220">
+      <line x1="170" y1="28" x2="95"  y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="170" y1="28" x2="245" y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="55"  y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="135" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="205" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="285" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="30"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="80"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="135" y1="152" x2="110" y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+
+      <circle cx="170" cy="18" r="18" fill="#00d4ff18" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="170" y="23" fill="#00d4ff" font-size="11" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">19</text>
+
+      <circle cx="95"  cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="95"  y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <circle cx="245" cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="245" y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">28</text>
+
+      <circle cx="55"  cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="55"  y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">45</text>
+      <circle cx="135" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="135" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <circle cx="205" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="205" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">97</text>
+      <circle cx="285" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="285" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">29</text>
+
+      <circle cx="30"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="30"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">72</text>
+      <circle cx="80"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="80"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">55</text>
+      <circle cx="110" cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="110" y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">83</text>
+    </svg>
+  </div>
+
+  <!-- OPTION 3: VALID (sorted) -->
+  <div class="option-card valid">
+    <div class="option-header">
+      <span class="option-title">Option 3</span>
+      <span class="badge valid">✓ VALID</span>
+    </div>
+    <div class="array-row">
+      <div class="ac"><div class="av root">19</div><div class="ai">0</div></div>
+      <div class="ac"><div class="av l1">28</div><div class="ai">1</div></div>
+      <div class="ac"><div class="av l1">29</div><div class="ai">2</div></div>
+      <div class="ac"><div class="av l2">31</div><div class="ai">3</div></div>
+      <div class="ac"><div class="av l2">31</div><div class="ai">4</div></div>
+      <div class="ac"><div class="av l2">45</div><div class="ai">5</div></div>
+      <div class="ac"><div class="av l2">55</div><div class="ai">6</div></div>
+      <div class="ac"><div class="av l3">72</div><div class="ai">7</div></div>
+      <div class="ac"><div class="av l3">83</div><div class="ai">8</div></div>
+      <div class="ac"><div class="av l3">97</div><div class="ai">9</div></div>
+    </div>
+    <svg class="tree" viewBox="0 0 340 220">
+      <line x1="170" y1="28" x2="95"  y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="170" y1="28" x2="245" y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="55"  y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="135" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="205" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="285" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="30"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="80"  y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="135" y1="152" x2="110" y2="196" stroke="#1a1d30" stroke-width="1.5"/>
+
+      <circle cx="170" cy="18" r="18" fill="#00d4ff18" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="170" y="23" fill="#00d4ff" font-size="11" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">19</text>
+
+      <circle cx="95"  cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="95"  y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">28</text>
+      <circle cx="245" cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="245" y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">29</text>
+
+      <circle cx="55"  cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="55"  y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <circle cx="135" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="135" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <circle cx="205" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="205" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">45</text>
+      <circle cx="285" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="285" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">55</text>
+
+      <circle cx="30"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="30"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">72</text>
+      <circle cx="80"  cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="80"  y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">83</text>
+      <circle cx="110" cy="205" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="110" y="210" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">97</text>
+    </svg>
+  </div>
+
+  <!-- OPTION 4: INVALID -->
+  <div class="option-card invalid">
+    <div class="option-header">
+      <span class="option-title">Option 4</span>
+      <span class="badge invalid">✗ INVALID</span>
+    </div>
+    <div class="array-row">
+      <div class="ac"><div class="av root">19</div><div class="ai">0</div></div>
+      <div class="ac"><div class="av l1">28</div><div class="ai">1</div></div>
+      <div class="ac"><div class="av l1">29</div><div class="ai">2</div></div>
+      <div class="ac"><div class="av l2">31</div><div class="ai">3</div></div>
+      <div class="ac"><div class="av violation-parent">45</div><div class="ai">4</div></div>
+      <div class="ac"><div class="av l2">83</div><div class="ai">5</div></div>
+      <div class="ac"><div class="av l2">97</div><div class="ai">6</div></div>
+      <div class="ac"><div class="av l3">55</div><div class="ai">7</div></div>
+      <div class="ac"><div class="av l3">72</div><div class="ai">8</div></div>
+      <div class="ac"><div class="av violation">31</div><div class="ai">9</div></div>
+    </div>
+    <svg class="tree" viewBox="0 0 340 240">
+      <line x1="170" y1="28" x2="95"  y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="170" y1="28" x2="245" y2="78" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="55"  y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="95"  y1="90" x2="135" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="205" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="245" y1="90" x2="285" y2="140" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="30"  y2="200" stroke="#1a1d30" stroke-width="1.5"/>
+      <line x1="55"  y1="152" x2="80"  y2="200" stroke="#1a1d30" stroke-width="1.5"/>
+      <!-- VIOLATION edge highlighted red -->
+      <line x1="135" y1="152" x2="110" y2="200" stroke="#ff4466" stroke-width="2" stroke-dasharray="4,2"/>
+
+      <circle cx="170" cy="18" r="18" fill="#00d4ff18" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="170" y="23" fill="#00d4ff" font-size="11" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">19</text>
+
+      <circle cx="95"  cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="95"  y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">28</text>
+      <circle cx="245" cy="84" r="16" fill="#7c6fff18" stroke="#7c6fff" stroke-width="1.5"/>
+      <text x="245" y="89" fill="#b8b0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">29</text>
+
+      <circle cx="55"  cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="55"  y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">31</text>
+      <!-- VIOLATION parent node: 45 -->
+      <circle cx="135" cy="148" r="15" fill="#1a080820" stroke="#ff8800" stroke-width="2"/>
+      <text x="135" y="153" fill="#ff8800" font-size="11" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">45</text>
+
+      <circle cx="205" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="205" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">83</text>
+      <circle cx="285" cy="148" r="15" fill="#ff6b3518" stroke="#ff6b35" stroke-width="1.5"/>
+      <text x="285" y="153" fill="#ffb89a" font-size="11" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">97</text>
+
+      <circle cx="30"  cy="208" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="30"  y="213" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">55</text>
+      <circle cx="80"  cy="208" r="13" fill="#1a1d3080" stroke="#2a3060" stroke-width="1.5"/>
+      <text x="80"  y="213" fill="#c8cee8" font-size="10" font-weight="700" text-anchor="middle" font-family="JetBrains Mono">72</text>
+
+      <!-- VIOLATION child node: 31 -->
+      <circle cx="110" cy="208" r="13" fill="#1a081080" stroke="#ff4466" stroke-width="2"/>
+      <text x="110" y="213" fill="#ff4466" font-size="10" font-weight="800" text-anchor="middle" font-family="JetBrains Mono">31</text>
+
+      <!-- violation label -->
+      <text x="155" y="182" fill="#ff4466" font-size="9" font-family="JetBrains Mono">45 &gt; 31 ✗</text>
+    </svg>
+    <div class="violation-note">
+      ⚠ Violation at i=4: parent <strong>45</strong> &gt; child <strong>31</strong> (i=9)<br/>
+      A parent must always be ≤ its children!
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
